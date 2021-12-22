@@ -16,23 +16,23 @@ from yolo3.utils import get_random_data
 
 
 def _main():
-    annotation_path = '/Users/sam/Downloads/BCCD.v3-raw.yolokeras/train/_annotations.txt'
-    log_dir = 'logs/000/'
-    classes_path = '/Users/sam/Downloads/BCCD.v3-raw.yolokeras/train/_classes.txt'
+    annotation_path = '/Volumes/MLData/Python/Breast_Detector/annotations.txt'
+    log_dir = 'logs/'
+    classes_path = '/Volumes/MLData/Python/Breast_Detector/classes.txt'
     anchors_path = 'model_data/yolo_anchors.txt'
     class_names = get_classes(classes_path)
     num_classes = len(class_names)
     anchors = get_anchors(anchors_path)
-    image_directory="/Users/sam/Downloads/BCCD.v3-raw.yolokeras/train/"
+    image_directory="/Volumes/MLData/Python/Breast_Detector/yolo_extract/"
 
     input_shape = (416,416) # multiple of 32, hw
 
     is_tiny_version = len(anchors)==6 # default setting
     if is_tiny_version:
         model = create_tiny_model(input_shape, anchors, num_classes,
-            freeze_body=2, weights_path='model_data/yolo_weights.h5')
+            freeze_body=2, weights_path='model_data/bccd_weights.h5')
     else:
-        model = create_model(input_shape, anchors, num_classes, freeze_body=2, weights_path='model_data/yolo_weights.h5') # make sure you know what you freeze
+        model = create_model(input_shape, anchors, num_classes, freeze_body=2, weights_path='model_data/bccd_weights.h5') # make sure you know what you freeze
 
 
     logging = TensorBoard(log_dir=log_dir)
@@ -61,7 +61,7 @@ def _main():
                 steps_per_epoch=max(1, num_train//batch_size),
                 validation_data=data_generator_wrapper(image_directory,lines[num_train:], batch_size, input_shape, anchors, num_classes),
                 validation_steps=max(1, num_val//batch_size),
-                epochs=50,
+                epochs=20,
                 initial_epoch=0,
                 callbacks=[checkpoint])
         model.save_weights(log_dir + 'trained_weights_stage_1.h5')
@@ -80,8 +80,8 @@ def _main():
             steps_per_epoch=max(1, num_train//batch_size),
             validation_data=data_generator_wrapper(image_directory,lines[num_train:], batch_size, input_shape, anchors, num_classes),
             validation_steps=max(1, num_val//batch_size),
-            epochs=200,
-            initial_epoch=50,
+            epochs=50,
+            initial_epoch=20,
             callbacks=[checkpoint, reduce_lr, early_stopping])
         model.save_weights(log_dir + 'trained_weights_final.h5')
 
